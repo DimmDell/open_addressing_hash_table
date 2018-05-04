@@ -12,21 +12,22 @@ namespace oaht
 
 using std::size_t;
 
-enum class entry_state {FREE, IN_USE, ERASED}; 
+enum class entry_state {FREE, IN_USE, ERASED}; //Состояние записи в таблице
 
 template<typename _Key, typename _Value>
 struct entry {
     _Key key;
     _Value value;
-    entry_state state = entry_state::FREE;
+    entry_state state = entry_state::FREE; //По умолчанию ставится свободный статус
 };
 
 template<typename _Key, typename _Value, typename _Hash = std::hash<_Key>>
 class hash_map {
 public:
-    hash_map(size_t capacity): capacity(capacity), size(0) {
-        entries = new entry<_Key,_Value>[capacity];
+    vector<entry<_Key,_Value>>(capacity) entries;
 
+    hash_map(size_t capacity): capacity(capacity), size(0) {
+        
         for (size_t i = 0; i < capacity; i++)
             entries[i] = entry<_Key,_Value>();
     }
