@@ -12,27 +12,23 @@ namespace oaht
 
 using std::size_t;
 
-enum class node_state {
-    FREE,
-    IN_USE,
-    ERASED
-}; 
+enum class entry_state {FREE, IN_USE, ERASED}; 
 
 template<typename _Key, typename _Value>
-struct node {
+struct entry {
     _Key key;
     _Value value;
-    node_state state = node_state::FREE;
+    entry_state state = entry_state::FREE;
 };
 
 template<typename _Key, typename _Value, typename _Hash = std::hash<_Key>>
 class hash_map {
 public:
     hash_map(size_t capacity): capacity(capacity), size(0) {
-        nodes = new node<_Key,_Value>[capacity];
+        entries = new entry<_Key,_Value>[capacity];
 
         for (size_t i = 0; i < capacity; i++)
-            nodes[i] = node<_Key,_Value>();
+            entries[i] = entry<_Key,_Value>();
     }
 
     hash_map(): hash_map(3) {
@@ -42,10 +38,10 @@ public:
         size_t index = get_index(key, capacity);
 
         for (size_t d = 0; d < capacity; d++) {
-            if (nodes[index].state == node_state::FREE)
+            if (entries[index].state == entry_state::FREE)
                 return false;
-            if (nodes[index].state == node_state::IN_USE
-                    && nodes[index].key == key)
+            if (entries[index].state == entry_state::IN_USE
+                    && entries[index].key == key)
                 return true;
             index++;
             if (index == capacity)
@@ -60,15 +56,15 @@ public:
             rehash();
 
         size_t index;
-        bool result = put(key, index, nodes, capacity);
+        bool result = put(key, index, entries, capacity);
         if (result)
             size++;
         
-        return nodes[index].value;
+        return entries[index].value;
     }
 
     ~hash_map() {
-        delete[] nodes;
+        delete[] entries;
     }
 
 private:
@@ -79,39 +75,39 @@ private:
     void rehash() {
         size_t n_capacity = (capacity << 1);
 
-        node<_Key, _Value>* n_nodes = new node<_Key, _Value>[n_capacity];
+        entry<_Key, _Value>* n_entries = new entry<_Key, _Value>[n_capacity];
         for (size_t i = 0; i < n_capacity; i++)
-            n_nodes[i] = node<_Key,_Value>();
+            n_entries[i] = entry<_Key,_Value>();
 
         for (size_t i = 0; i < capacity; i++)
-            if (nodes[i].state == node_state::IN_USE) {
+            if (entries[i].state == entry_state::IN_USE) {
                 size_t index;
-                put(nodes[i].key, index, n_nodes, n_capacity);
-                n_nodes[index].value = nodes[i].value;
+                put(entries[i].key, index, n_entries, n_capacity);
+                n_entries[index].value = entries[i].value;
             }
 
-        delete[] nodes;
+        delete[] entries;
         
-        nodes = n_nodes;
+        entries = n_entries;
         capacity = n_capacity;
     }
 
-    bool put(const _Key& key, size_t& index, node<_Key,_Value>* nodes, size_t nodes_length) {
-        index = get_index(key, nodes_length);
+    bool put(const _Key& key, size_t& index, entry<_Key,_Value>* entries, size_t entries_length) {
+        index = get_index(key, entries_length);
 
-        for (size_t i = 0; i < nodes_length; i++) {
-            if (nodes[index].state == node_state::FREE
-                    || nodes[index].state == node_state::ERASED) {
-                nodes[index].key = key;
-                nodes[index].state = node_state::IN_USE;
+        for (size_t i = 0; i < entries_length; i++) {
+            if (entries[index].state == entry_state::FREE
+                    || entries[index].state == entry_state::ERASED) {
+                entries[index].key = key;
+                entries[index].state = entry_state::IN_USE;
                 return true;
             }
 
-            if (nodes[index].key == key)
+            if (entries[index].key == key)
                 return false;
             
             index++;
-            if (index == nodes_length)
+            if (index == entries_length)
                 index = 0;
         }
 
@@ -121,7 +117,7 @@ private:
     size_t capacity;
     size_t size;
 
-    node<_Key, _Value>* nodes;
+    entry<_Key, _Value>* entries;
     _Hash h;
 };
 
