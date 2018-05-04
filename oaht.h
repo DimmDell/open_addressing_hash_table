@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstddef>
 #include <unordered_map>
+#include <vector>
 
 using namespace std;
 
@@ -24,18 +25,20 @@ struct entry {
 template<typename _Key, typename _Value, typename _Hash = std::hash<_Key>>
 class hash_map {
 public:
-    vector<entry<_Key,_Value>>(capacity) entries;
-
-    hash_map(size_t capacity): capacity(capacity), size(0) {
-        
+    
+    vector <entry<_Key,_Value>> entries;
+    
+    hash_map(size_t capacity) {
+        entries.capacity() = capacity;
+        size = 0;
         for (size_t i = 0; i < capacity; i++)
             entries[i] = entry<_Key,_Value>();
     }
 
-    hash_map(): hash_map(3) {
+    hash_map(): hash_map(5) {
     }
 
-    size_t count(const _Key& key) const {
+    size_t count(const _Key& key) const { //Количество элементов с ключом key
         size_t index = get_index(key, capacity);
 
         for (size_t d = 0; d < capacity; d++) {
@@ -70,13 +73,15 @@ public:
 
 private:
     size_t get_index(const _Key& key, size_t size) const {
-        return (h(key) * 22543) % size;
+        return (h(key) * 22543) % size; //HMARK
     }
 
+    //Алгоритм перехеширования
     void rehash() {
         size_t n_capacity = (capacity << 1);
 
-        entry<_Key, _Value>* n_entries = new entry<_Key, _Value>[n_capacity];
+        //entry<_Key, _Value>* n_entries = new entry<_Key, _Value>[n_capacity];
+        vector<entry<_Key, _Value>> n_entries (n_capacity);
         for (size_t i = 0; i < n_capacity; i++)
             n_entries[i] = entry<_Key,_Value>();
 
@@ -87,7 +92,7 @@ private:
                 n_entries[index].value = entries[i].value;
             }
 
-        delete[] entries;
+        //delete[] entries;
         
         entries = n_entries;
         capacity = n_capacity;
@@ -118,7 +123,6 @@ private:
     size_t capacity;
     size_t size;
 
-    entry<_Key, _Value>* entries;
     _Hash h;
 };
 
